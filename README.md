@@ -66,94 +66,45 @@ civic-grievance-system/
 └── FEATURES_GUIDE.md
 
 ```
-🛠️ Technologies Used
+## 🛠️ Technologies Used
 
-Layer,Technology
-Backend,"Python 3.8+, Flask, Flask-CORS, SQLite"
-AI/ML,"Google Gemini API, scikit-learn (TF-IDF + Naive Bayes), Fuzzy Logic"
-Web Frontend,"HTML5, CSS3 (Glassmorphism + Dark Theme), JavaScript, Chart.js"
-Mobile,"Flutter (Dart), speech_to_text, image_picker, geolocator, sqflite"
-Others,"Web Speech API, Nominatim (OpenStreetMap)"
+| Layer              | Technology                                                                 |
+|--------------------|----------------------------------------------------------------------------|
+| Backend            | Python 3.8+, Flask, Flask-CORS, SQLite                                     |
+| AI/ML              | Google Gemini API, scikit-learn (TF-IDF + Naive Bayes), Fuzzy Logic        |
+| Web Frontend       | HTML5, CSS3 (Glassmorphism + Dark Theme), JavaScript, Chart.js             |
+| Mobile             | Flutter (Dart), speech_to_text, image_picker, geolocator, sqflite          |
+| Others             | Web Speech API, Nominatim (OpenStreetMap)                                  |
 
-🚀 Local Setup & Run Guide
-Prerequisites
+---
 
-Python 3.8 or higher
-Flutter SDK (run flutter doctor and resolve all issues)
-Git
-Modern web browser (Chrome or Edge recommended)
+## 🚀 Local Setup & Run Guide
 
-Step 1: Clone the Repository
-Bashgit clone https://github.com/Monalsree/civic-grievance-system.git
-cd civic-grievance-system
-Step 2: Backend Setup (Required First)
-Bashcd backend
-pip install -r requirements.txt
-python app.py
-Backend starts at: http://127.0.0.1:5000
-Step 3: Run Web Interfaces
-Citizen Mobile Web App
-Bashcd mobile_web_app
-python -m http.server 8000
-Open → http://localhost:8000
-Admin Portal
-Bashcd admin_portal
-python -m http.server 8001
-Open → http://localhost:8001/dashboard.html
-Step 4: Run Flutter Mobile App
-Bashcd "mobile appppp"
-flutter pub get
-flutter run -d chrome
-Optional: One-Click Launcher
-Bashpython run_project.py
+### Prerequisites
 
-📱 How to Use
-As a Citizen
+- Python 3.8 or higher
+- Flutter SDK (run `flutter doctor` and resolve all issues)
+- Git
+- Modern web browser (Chrome or Edge recommended)
 
-Visit http://localhost:8000
-Fill the complaint form (text/voice/image/location)
-Submit and note your Complaint ID
-Track status on the Track page or in the Flutter app
+---
 
-As an Administrator
+###📊 Dataset
+- The AI/ML models are trained on database/complaints_1500.csv, covering common civic issues such as:
+- Electricity, Garbage, Roads, Sanitation, Water Supply, Drainage, Street Lights, etc.
+---
+### 🔮 Future Roadmap
 
-Visit http://localhost:8001/dashboard.html
-View all complaints
-Update status, add notes, or assign departments
-Monitor analytics and trends
+- Official Android & iOS builds of the Flutter app
+- Real-time notifications using WebSockets
+- Advanced image analysis for complaint evidence
+- Multi-language support (Tamil, Hindi, etc.)
+- Integration with official government grievance portals
 
+---
 
-🔧 Troubleshooting
-
-Backend fails to start — Run pip install -r requirements.txt inside the backend/ folder
-Port already in use — Stop any process using ports 5000, 8000, or 8001
-Flutter errors — Run flutter clean && flutter pub get
-API connection issues — Ensure the backend is running first
-Voice input not working — Allow microphone permission in the browser
-
-For more detailed steps, refer to:
-
-RUN_WEBAPP.md
-FLUTTER_APP_GUIDE.md
-PROJECT_GUIDE.md
-
-
-📊 Dataset
-The AI/ML models are trained on database/complaints_1500.csv, covering common civic issues such as:
-Electricity, Garbage, Roads, Sanitation, Water Supply, Drainage, Street Lights, etc.
-
-🔮 Future Roadmap
-
-Official Android & iOS builds of the Flutter app
-Real-time notifications using WebSockets
-Advanced image analysis for complaint evidence
-Multi-language support (Tamil, Hindi, etc.)
-Integration with official government grievance portals
-
-
-📄 License
-This project is open for learning, contribution, and educational purposes.
-
-Made with ❤️ for better civic governance and smarter cities
-Author: Monal sree P
-GitHub: Monalsree/civic-grievance-system
+### Author:
+- Monal sree P
+### GitHub:
+- Monalsree/civic-grievance-system
+  
