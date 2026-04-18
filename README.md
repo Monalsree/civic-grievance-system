@@ -1,165 +1,181 @@
-**# Civic Grievance System
+# Civic Grievance System
 
-A full-stack **AI-powered civic grievance management platform** that enables citizens to submit, track, and resolve complaints efficiently while administrators manage and analyze grievances with intelligent routing and analytics.
+A full-stack **AI-powered civic grievance management platform** that enables citizens to easily submit, track, and resolve complaints. Administrators can efficiently manage grievances with intelligent AI routing, analytics, and smart decision support.
 
-The system integrates **Google Gemini AI** for smart classification and response generation, along with traditional ML models, fuzzy logic for priority scoring, and a modern responsive interface.
+The system combines **Google Gemini AI** for advanced complaint understanding and response suggestions, along with traditional ML models, fuzzy logic for priority scoring, and a clean, modern responsive interface.
 
 ---
 
 ## ✨ Key Features
 
 ### For Citizens
-- Submit complaints with text, voice input, image upload, and auto location capture
-- Real-time complaint tracking and status updates
-- Upvote important grievances
-- Notifications for status changes
-- Offline complaint saving and sync (Flutter app)
+- Submit complaints using text, voice input, image upload, and automatic location capture
+- Real-time tracking of complaint status
+- Upvote important public grievances
+- Receive notifications for status changes
+- Offline support with sync (in Flutter mobile app)
 
 ### For Administrators
 - Centralized dashboard to view and manage all complaints
-- AI-assisted categorization, urgency detection, and department routing
-- Analytics and trend reports (response time, category-wise trends)
-- Quick status updates and responses
+- AI-powered categorization, urgency detection, and department routing
+- Analytics dashboard with trends and response time reports
+- Quick status updates and response management
 
 ### AI & Smart Features
-- Google Gemini API for intelligent complaint understanding and suggestions
+- Google Gemini API for intelligent complaint analysis and suggestions
 - TF-IDF + Naive Bayes ML model (trained on 1500+ complaints) as fallback
-- Fuzzy logic engine for priority scoring
+- Fuzzy logic engine for dynamic priority scoring
 - Keyword-based sentiment and urgency analysis
-- Automatic department routing
+- Automatic routing to relevant departments
 
 ---
 
 ## 🏗️ Project Architecture
 
-The system follows a modular architecture with separate components for frontend, backend, AI/ML, and analytics.
+The project uses a modular architecture separating frontend, backend, AI/ML, and analytics layers.
 
 **Main Components:**
-- **Backend**: Flask REST API (Python)
-- **Frontend**: HTML/CSS/JS web apps (Mobile Web + Admin Portal)
-- **Mobile**: Full Flutter/Dart app with voice input and offline support
-- **AI/ML**: Gemini + Scikit-learn + Fuzzy Logic
-- **Database**: SQLite with schema and sample dataset
+- **Backend**: Flask-based REST API (Python)
+- **Frontend**: HTML/CSS/JS web applications (Citizen Mobile Web + Admin Portal)
+- **Mobile App**: Complete Flutter/Dart application with voice and offline support
+- **AI/ML Layer**: Google Gemini + Scikit-learn + Fuzzy Logic
+- **Database**: SQLite with schema and sample dataset (`complaints_1500.csv`)
 
 ---
 
 ## 📁 Project Structure
+
+```bash
 civic-grievance-system/
 ├── backend/                    # Flask REST API
-├── ml_engine/                  # AI & ML services (Gemini, model training)
-├── soft_computing/             # Fuzzy logic priority engine
-├── analytics_engine/           # Trend and report generation
-├── database/                   # Schema, SQLite DB, complaints_1500.csv
-├── mobile_web_app/             # Citizen web interface (index.html, track.html)
+├── ml_engine/                  # AI/ML services (Gemini integration & model training)
+├── soft_computing/             # Fuzzy logic priority scoring engine
+├── analytics_engine/           # Analytics and report generation
+├── database/                   # Database schema, SQLite DB, and complaints_1500.csv
+├── mobile_web_app/             # Citizen-facing web interface (index.html, track.html)
 ├── admin_portal/               # Admin dashboard
-├── mobile appppp/              # Flutter mobile app (fully functional)
-├── tests/                      # Unit tests
-├── run_project.py              # Helper launcher script
+├── mobile appppp/              # Full Flutter mobile application
+├── tests/                      # Unit and integration tests
+├── run_project.py              # Helper script to launch the project
 ├── fix_routing.py
 ├── migrate_upvotes.py
+├── update_dio_errors.py
 ├── PROJECT_GUIDE.md
 ├── RUN_WEBAPP.md
 ├── FLUTTER_APP_GUIDE.md
 └── FEATURES_GUIDE.md
-text---
 
-## 🛠️ Technologies Used
+🛠️ Technologies Used
 
-| Layer              | Technology                          |
-|--------------------|-------------------------------------|
-| Backend            | Python 3.8+, Flask, Flask-CORS, SQLite |
-| AI/ML              | Google Gemini API, scikit-learn (TF-IDF + Naive Bayes), Fuzzy Logic |
-| Web Frontend       | HTML5, CSS3 (Glassmorphism + Dark UI), JavaScript, Chart.js |
-| Mobile             | Flutter (Dart), speech_to_text, image_picker, geolocator, sqflite |
-| Others             | Web Speech API, Nominatim (OpenStreetMap), Chart.js |
 
----
 
-## 🚀 Complete Local Setup & Run Guide
 
-### Prerequisites
-- Python 3.8+
-- Flutter SDK (run `flutter doctor` and fix issues)
-- Git
-- A modern browser (Edge/Chrome recommended)
 
-### Step 1: Clone the Repository
-```bash
-git clone https://github.com/Monalsree/civic-grievance-system.git
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+LayerTechnologyBackendPython 3.8+, Flask, Flask-CORS, SQLiteAI/MLGoogle Gemini API, scikit-learn (TF-IDF + Naive Bayes), Fuzzy LogicWeb FrontendHTML5, CSS3 (Glassmorphism + Dark Theme), JavaScript, Chart.jsMobileFlutter (Dart), speech_to_text, image_picker, geolocator, sqfliteOthersWeb Speech API, Nominatim (OpenStreetMap)
+
+🚀 Local Setup & Run Guide
+Prerequisites
+
+Python 3.8 or higher
+Flutter SDK (run flutter doctor and resolve all issues)
+Git
+Modern web browser (Chrome or Edge recommended)
+
+Step 1: Clone the Repository
+Bashgit clone https://github.com/Monalsree/civic-grievance-system.git
 cd civic-grievance-system
-Step 2: Backend Setup (Most Important)
+Step 2: Backend Setup (Required First)
 Bashcd backend
 pip install -r requirements.txt
 python app.py
-
-Backend runs on: http://127.0.0.1:5000 (and your local IP)
-
-Step 3: Run Web Interfaces (Recommended Quick Start)
-Terminal 2 – Citizen Mobile Web App
+Backend starts at: http://127.0.0.1:5000
+Step 3: Run Web Interfaces
+Citizen Mobile Web App
 Bashcd mobile_web_app
 python -m http.server 8000
-→ Open: http://localhost:8000
-Terminal 3 – Admin Portal
+Open → http://localhost:8000
+Admin Portal
 Bashcd admin_portal
 python -m http.server 8001
-→ Open: http://localhost:8001/dashboard.html
-Step 4: Run Flutter Mobile App (Optional but Fully Featured)
+Open → http://localhost:8001/dashboard.html
+Step 4: Run Flutter Mobile App
 Bashcd "mobile appppp"
 flutter pub get
-flutter run -d edge --no-web-resources-cdn
-(You can also use Chrome: flutter run -d chrome)
-One-Click Launcher (Experimental)
+flutter run -d chrome
+Optional: One-Click Launcher
 Bashpython run_project.py
 
-📱 How to Use the Application
+📱 How to Use
 As a Citizen
 
-Go to http://localhost:8000
-Fill the complaint form (or use voice input in Flutter app)
-Submit with optional photo and location
-Track status using complaint ID on track.html or in the app
+Visit http://localhost:8000
+Fill the complaint form (text/voice/image/location)
+Submit and note your Complaint ID
+Track status on the Track page or in the Flutter app
 
 As an Administrator
 
-Go to http://localhost:8001/dashboard.html
+Visit http://localhost:8001/dashboard.html
 View all complaints
 Update status, add notes, or assign departments
-Check analytics widgets
+Monitor analytics and trends
 
 
 🔧 Troubleshooting
 
-Backend not starting: Run pip install -r requirements.txt in /backend
-Port already in use: Kill the process using the port (5000, 8000, 8001)
-Flutter issues: Run flutter clean && flutter pub get
-API connection errors: Ensure backend is running first. Check constants.dart for base URL.
-Voice input not working: Grant microphone permission in browser
+Backend fails to start — Run pip install -r requirements.txt inside the backend/ folder
+Port already in use — Stop any process using ports 5000, 8000, or 8001
+Flutter errors — Run flutter clean && flutter pub get
+API connection issues — Ensure the backend is running first
+Voice input not working — Allow microphone permission in the browser
 
-For detailed instructions, refer to:
+For more detailed steps, refer to:
 
 RUN_WEBAPP.md
 FLUTTER_APP_GUIDE.md
 PROJECT_GUIDE.md
 
 
-📊 Dataset & Training
-The system is trained on database/complaints_1500.csv covering common categories:
+📊 Dataset
+The AI/ML models are trained on database/complaints_1500.csv, covering common civic issues such as:
+Electricity, Garbage, Roads, Sanitation, Water Supply, Drainage, Street Lights, etc.
 
-Electricity, Garbage, Roads, Sanitation, Water, etc.
+🔮 Future Roadmap
 
-You can retrain the ML model using ml_engine/train_model.py.
+Official Android & iOS builds of the Flutter app
+Real-time notifications using WebSockets
+Advanced image analysis for complaint evidence
+Multi-language support (Tamil, Hindi, etc.)
+Integration with official government grievance portals
 
-🔮 Future Enhancements (Roadmap)
-
-Mobile app build for Android/iOS
-Real-time notifications (WebSockets)
-Advanced image analysis for evidence
-Multi-language support
-Integration with government APIs
 
 📄 License
-This project is open for learning and contribution.
+This project is open for learning, contribution, and educational purposes.
 
-Made with ❤️ for better civic governance
-Author: Monalsree
-Repository: github.com/Monalsree/civic-grievance-system
+Made with ❤️ for better civic governance and smarter cities
+Author: Monal sree P
+GitHub: Monalsree/civic-grievance-system
