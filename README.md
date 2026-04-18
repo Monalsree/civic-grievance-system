@@ -89,7 +89,7 @@ civic-grievance-system/
 
 ---
 
-###📊 Dataset
+### 📊 Dataset
 - The AI/ML models are trained on database/complaints_1500.csv, covering common civic issues such as:
 - Electricity, Garbage, Roads, Sanitation, Water Supply, Drainage, Street Lights, etc.
 ---
