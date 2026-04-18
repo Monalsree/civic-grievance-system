@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Civic Grievance System</title>
+    <link rel="stylesheet" href="css/admin_style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="admin-container">
+        <aside class="sidebar">
+            <div class="logo">🏛️ Admin Portal</div>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="analytics.html" class="active">Analytics</a>
+                <a href="#">Complaints</a>
+                <a href="#">Settings</a>
+            </nav>
+        </aside>
+        <main class="content">
+            <header>
+                <h1>System Analytics</h1>
+            </header>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <canvas id="complaintsChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <canvas id="resolutionTimeChart"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="js/analytics.js?v=20260408"></script>
+</body>
+
+</html>

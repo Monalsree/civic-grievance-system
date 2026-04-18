@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin Dashboard - Civic Grievance System">
+    <title>Admin Dashboard - Civic Grievance System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .admin-nav { display: flex; gap: 1rem; margin: 1.5rem 0; flex-wrap: wrap; }
+        .admin-nav button { padding: 0.75rem 1.5rem; border: none; background: #7c3aed; color: white; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .admin-nav button.inactive { background: transparent; border: 1px solid #cbd5e1; color: #64748b; }
+        .admin-nav button:hover { transform: translateY(-2px); }
+        .admin-section { display: none; }
+        .admin-section.active { display: block; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: rgba(124, 58, 237, 0.1); border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.5rem; text-align: center; }
+        .stat-number { font-size: 2rem; font-weight: 700; color: #7c3aed; margin: 0.5rem 0; }
+        .insight-card { background: rgba(30, 41, 59, 0.6); border-left: 4px solid #f59e0b; border-radius: 6px; padding: 1rem; margin-bottom: 1rem; }
+        .hotspots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin: 1rem 0; }
+        .hotspot-badge { background: rgba(124, 58, 237, 0.1); border: 1px solid #cbd5e1; border-radius: 6px; padding: 1rem; text-align: center; }
+        .prediction-card { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(124, 58, 237, 0.1)); border-radius: 6px; padding: 1rem; margin-bottom: 0.75rem; }
+        #mapContainer { height: 500px; border-radius: 8px; border: 1px solid #cbd5e1; margin: 1rem 0; overflow: hidden; }
+        .leaflet-container { background: #f8fafc !important; }
+        table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f1f5f9; font-weight: 600; }
+        tr:hover { background: #f8fafc; }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="logo">🏛️ Admin Dashboard</h1>
+            <p class="tagline">Manage citizen complaints & analytics</p>
+        </header>
+
+        <!-- User Info & Logout -->
+        <div style="text-align: right; margin-bottom: 1rem;">
+            <span id="userInfo" style="color: #64748b;"></span>
+            <button onclick="logout()" class="btn btn-secondary" style="margin-left: 1rem;">Logout</button>
+        </div>
+
+        <!-- Admin Navigation -->
+        <div class="admin-nav">
+            <button class="admin-nav-btn active" onclick="switchSection('dashboard')">📊 Dashboard</button>
+            <button class="admin-nav-btn inactive" onclick="switchSection('insights')">🧠 Insights</button>
+            <button class="admin-nav-btn inactive" onclick="switchSection('predictions')">🔮 Predictions</button>
+            <button class="admin-nav-btn inactive" onclick="switchSection('map')">🗺️ Map</button>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboardSection" class="admin-section active">
+            <h2>📊 Dashboard</h2>
+            <div class="stats-grid" id="statsContainer"></div>
+            
+            <h3 style="margin-top: 2rem;">📋 All Complaints</h3>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Category</th>
+                            <th>Location</th>
+                            <th>Department</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Upvotes</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="complaintsTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Insights Section -->
+        <div id="insightsSection" class="admin-section">
+            <h2>🧠 Pattern Detection & Insights</h2>
+            <div id="insightsContainer"></div>
+            
+            <h3 style="margin-top: 2rem;">🔥 Problem Hotspots</h3>
+            <div class="hotspots-grid" id="hotspotsContainer"></div>
+            
+            <h3 style="margin-top: 2rem;">⭐ Trending Complaints</h3>
+            <div id="trendingContainer"></div>
+        </div>
+
+        <!-- Predictions Section -->
+        <div id="predictionsSection" class="admin-section">
+            <h2>🔮 Future Issue Predictions</h2>
+            <div id="predictionsContainer"></div>
+            
+            <h3 style="margin-top: 2rem;">⚠️ Seasonal Alerts</h3>
+            <div id="seasonalContainer"></div>
+        </div>
+
+        <!-- Map Section -->
+        <div id="mapSection" class="admin-section">
+            <h2>🗺️ Complaint Map View</h2>
+            <div id="mapContainer"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const API = 'http://localhost:5000/api';
+        let currentUser = null;
+        let map = null;
+        let markers = [];
+
+        // Check if user is logged in
+        function checkAuth() {
+            const user = localStorage.getItem('cgs_user');
+            if (!user) {
+                window.location.href = 'app.html';
+                return;
+            }
+            currentUser = JSON.parse(user);
+            if (currentUser.role !== 'admin') {
+                window.location.href = 'index.html';
+                return;
+            }
+            document.getElementById('userInfo').textContent = `👤 ${currentUser.name} (Admin)`;
+            loadDashboard();
+        }
+
+        function logout() {
+            localStorage.removeItem('cgs_user');
+            window.location.href = 'app.html';
+        }
+
+        function switchSection(section) {
+            document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(section + 'Section').classList.add('active');
+            document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active', 'inactive'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.admin-nav-btn').forEach(b => {
+                if (!b.classList.contains('active')) b.classList.add('inactive');
+            });
+
+            if (section === 'insights') loadInsights();
+            else if (section === 'predictions') loadPredictions();
+            else if (section === 'map') loadMap();
+        }
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API}/analytics/summary`);
+                const data = await response.json();
+
+                const statsHTML = `
+                    <div class="stat-card">
+                        <h3>📊 Total</h3>
+                        <div class="stat-number">${data.total}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>⏳ Pending</h3>
+                        <div class="stat-number">${data.pending}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>✅ Resolved</h3>
+                        <div class="stat-number">${data.resolved}</div>
+                        <p style="font-size: 0.85rem; color: #64748b;">${data.resolution_rate}%</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>🔴 High Priority</h3>
+                        <div class="stat-number">${data.high_priority}</div>
+                    </div>
+                `;
+                document.getElementById('statsContainer').innerHTML = statsHTML;
+
+                const complaints = await fetch(`${API}/complaints`).then(r => r.json());
+                renderComplaintsTable(complaints);
+            } catch (error) {
+                alert('Error loading dashboard: ' + error.message);
+            }
+        }
+
+        function renderComplaintsTable(complaints) {
+            const tbody = document.getElementById('complaintsTable');
+            tbody.innerHTML = complaints.map(c => `
+                <tr>
+                    <td><strong>${c.id}</strong></td>
+                    <td>${c.category}</td>
+                    <td>${c.location}</td>
+                    <td>${c.department || '-'}</td>
+                    <td><span style="background: ${c.priority === 'high' ? '#ef4444' : c.priority === 'medium' ? '#f59e0b' : '#10b981'}; color: white; padding: 0.25rem 0.5rem; border-radius: 3px; font-size: 0.8rem;">${c.priority}</span></td>
+                    <td>${c.status}</td>
+                    <td>👍 ${c.upvotes || 0}</td>
+                    <td>
+                        <select onchange="updateStatus('${c.id}', this.value)" style="padding: 0.25rem; border-radius: 4px; font-size: 0.85rem;">
+                            <option value="submitted" ${c.status === 'submitted' ? 'selected' : ''}>Submitted</option>
+                            <option value="assigned" ${c.status === 'assigned' ? 'selected' : ''}>Assigned</option>
+                            <option value="in-progress" ${c.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="resolved" ${c.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                        </select>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function updateStatus(id, status) {
+            try {
+                await fetch(`${API}/complaints/${id}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                alert('Status updated!');
+                loadDashboard();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+
+        async function loadInsights() {
+            try {
+                const response = await fetch(`${API}/analytics/insights`);
+                const data = await response.json();
+
+                if (data.insights && data.insights.length > 0) {
+                    document.getElementById('insightsContainer').innerHTML = data.insights.map(i => `
+                        <div class="insight-card">
+                            <strong>${i.type === 'spike' ? '📈' : i.type === 'decline' ? '📉' : '🆕'} ${i.category}</strong>
+                            <p>${i.message}</p>
+                            <small>Last week: ${i.previous} | This week: ${i.current} | Change: ${i.change_pct}%</small>
+                        </div>
+                    `).join('');
+                }
+
+                if (data.hotspots && data.hotspots.length > 0) {
+                    document.getElementById('hotspotsContainer').innerHTML = data.hotspots.map(h => `
+                        <div class="hotspot-badge">
+                            <strong>📍 ${h.location}</strong>
+                            <p>${h.count} complaints</p>
+                        </div>
+                    `).join('');
+                }
+
+                if (data.trending && data.trending.length > 0) {
+                    document.getElementById('trendingContainer').innerHTML = data.trending.map(t => `
+                        <div style="background: #f8fafc; border-left: 3px solid #7c3aed; padding: 1rem; margin-bottom: 0.5rem; border-radius: 4px;">
+                            <strong>${t.category}</strong> - ${t.description}
+                            <span style="float: right; background: #7c3aed; color: white; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.8rem;">👍 ${t.upvotes}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                alert('Error loading insights: ' + error.message);
+            }
+        }
+
+        async function loadPredictions() {
+            try {
+                const response = await fetch(`${API}/analytics/predictions`);
+                const data = await response.json();
+
+                if (data.predictions && data.predictions.length > 0) {
+                    document.getElementById('predictionsContainer').innerHTML = data.predictions.map(p => `
+                        <div class="prediction-card">
+                            <strong>${p.category}</strong>
+                            <p>${p.message}</p>
+                            <small>Avg: ${p.avg_weekly}/week | Predicted: ${p.predicted_next_week}/week | Risk: ${p.risk_level}</small>
+                        </div>
+                    `).join('');
+                }
+
+                if (data.seasonal_alerts && data.seasonal_alerts.length > 0) {
+                    document.getElementById('seasonalContainer').innerHTML = data.seasonal_alerts.map(s => `
+                        <div class="insight-card" style="border-left-color: #3b82f6;">
+                            <strong>📅 ${s.message}</strong>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                alert('Error loading predictions: ' + error.message);
+            }
+        }
+
+        async function loadMap() {
+            if (!map) {
+                map = L.map('mapContainer').setView([28.7, 77.1], 12);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap',
+                    maxZoom: 19
+                }).addTo(map);
+            }
+
+            try {
+                const complaints = await fetch(`${API}/complaints`).then(r => r.json());
+                markers.forEach(m => map.removeLayer(m));
+                markers = [];
+
+                complaints.forEach(c => {
+                    let lat = 28.7 + (Math.random() - 0.5) * 0.5;
+                    let lng = 77.1 + (Math.random() - 0.5) * 0.5;
+                    const color = c.priority === 'high' ? '#ef4444' : c.priority === 'medium' ? '#f59e0b' : '#10b981';
+
+                    const marker = L.circleMarker([lat, lng], {
+                        radius: 8,
+                        fillColor: color,
+                        color: '#fff',
+                        weight: 2,
+                        opacity: 0.8,
+                        fillOpacity: 0.7
+                    }).bindPopup(`<strong>${c.category}</strong><br>${c.location}<br>Priority: ${c.priority}`).addTo(map);
+
+                    markers.push(marker);
+                });
+            } catch (error) {
+                alert('Error loading map: ' + error.message);
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', checkAuth);
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Track your civic grievance complaint status">
+    <title>Track Complaint - Civic Grievance System</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script>
+        // Check if user is logged in
+        if (!localStorage.getItem('cgs_user')) {
+            window.location.href = 'app.html';
+        }
+        const currentUser = JSON.parse(localStorage.getItem('cgs_user') || '{}');
+        if (currentUser.role === 'admin') {
+            window.location.href = 'admin.html';
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="logo">🏛️ Civic Connect</h1>
+            <p class="tagline">Your Voice, Our Priority</p>
+        </header>
+
+        <!-- Navigation with Logout -->
+        <nav class="nav" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a href="index.html" class="nav-link">Submit Complaint</a>
+                <a href="track.html" class="nav-link active">Track Status</a>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <span id="userInfo" style="color: #94a3b8; font-size: 0.9rem;"></span>
+                <button onclick="logout()" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Search Card -->
+        <div class="card">
+            <h2 class="card-title">Track Your Complaint</h2>
+
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" class="search-input"
+                    placeholder="Enter Complaint ID or Phone Number">
+            </div>
+
+            <button id="searchBtn" class="btn btn-primary btn-block">
+                Search Complaint
+            </button>
+        </div>
+
+        <!-- Results Container -->
+        <div id="resultsContainer" class="hidden">
+            <!-- Complaint Details Card -->
+            <div class="card mt-md">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <div>
+                        <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">Complaint Details</h3>
+                        <p class="text-muted" style="font-size: 0.875rem;">
+                            ID: <strong id="complaintId">-</strong>
+                        </p>
+                    </div>
+                    <span id="priorityBadge" class="badge badge-medium">Medium</span>
+                </div>
+
+                <!-- Info Grid -->
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Category</div>
+                        <div class="info-value" id="complaintCategory">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Department</div>
+                        <div class="info-value" id="complaintDepartment">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Location</div>
+                        <div class="info-value" id="complaintLocation">-</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Submitted On</div>
+                        <div class="info-value" id="complaintDate">-</div>
+                    </div>
+                </div>
+
+                <div class="form-group mt-md">
+                    <div class="info-label">Description</div>
+                    <p id="complaintDescription"
+                        style="color: var(--text-secondary); margin-top: 0.5rem; line-height: 1.6;">-</p>
+                </div>
+            </div>
+
+            <!-- Status Timeline Card -->
+            <div class="card mt-md">
+                <h3 style="font-size: 1.25rem; margin-bottom: 1.5rem;">Status Timeline</h3>
+
+                <div class="timeline" id="statusTimeline">
+                    <div class="timeline-item active">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title"><span class="badge badge-submitted">Submitted</span></div>
+                            <div class="timeline-time" id="submittedTime">-</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item" id="assignedItem">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title"><span class="badge badge-assigned">Assigned</span></div>
+                            <div class="timeline-time" id="assignedTime">Pending</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item" id="progressItem">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title"><span class="badge badge-in-progress">In Progress</span></div>
+                            <div class="timeline-time" id="progressTime">Pending</div>
+                        </div>
+                    </div>
+                    <div class="timeline-item" id="resolvedItem">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-title"><span class="badge badge-resolved">Resolved</span></div>
+                            <div class="timeline-time" id="resolvedTime">Pending</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Estimated Resolution -->
+                <div class="mt-md"
+                    style="text-align: center; padding: 1rem; background: var(--bg-input); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                    <div class="info-label">Estimated Resolution</div>
+                    <div style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-top: 0.5rem;">
+                        <span id="estimatedResolution">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-md" style="display: flex; gap: 0.75rem;">
+                <button id="refreshBtn" class="btn btn-secondary" style="flex: 1;">🔄 Refresh</button>
+                <button id="newSearchBtn" class="btn btn-primary" style="flex: 1;">🔍 New Search</button>
+            </div>
+        </div>
+
+        <!-- No Results -->
+        <div id="noResults" class="card mt-md hidden">
+            <div style="text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">😔</div>
+                <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">No Complaint Found</h3>
+                <p class="text-muted">Please check your Complaint ID or Phone Number and try again.</p>
+            </div>
+        </div>
+
+        <!-- How to Track -->
+        <div class="card mt-md">
+            <h3 style="font-size: 1.125rem; margin-bottom: 1rem; color: var(--text-secondary);">
+                📌 How to Track
+            </h3>
+            <ul style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.8; padding-left: 1.5rem;">
+                <li>Enter your Complaint ID received after submission</li>
+                <li>Or enter the phone number used during submission</li>
+                <li>View real-time status updates and timeline</li>
+                <li>Check estimated resolution time</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script>
+        // Display user info
+        document.getElementById('userInfo').textContent = `👤 ${currentUser.name || 'User'}`;
+        
+        function logout() {
+            localStorage.removeItem('cgs_user');
+            window.location.href = 'app.html';
+        }
+    </script>
+    <script src="assets/js/script.js"></script>
+</body>
+
+</html>

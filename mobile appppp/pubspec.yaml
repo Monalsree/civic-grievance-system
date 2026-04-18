@@ -1,0 +1,111 @@
+name: civic_grievance_system
+description: "A comprehensive Flutter mobile application for Civic Grievance System with citizen and admin interfaces."
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # HTTP & Networking
+  http: ^1.1.0
+  dio: ^5.3.0
+  connectivity_plus: ^6.0.5
+
+  # State Management
+  provider: ^6.0.0
+  riverpod: ^2.4.0
+  flutter_riverpod: ^2.4.0
+
+  # Local Storage
+  shared_preferences: ^2.2.0
+  sqflite: ^2.3.0
+  path_provider: ^2.1.0
+  path: ^1.8.0
+
+  # UI & Design
+  flutter_staggered_grid_view: ^0.7.0
+  shimmer: ^3.0.0
+  fl_chart: ^0.63.0
+  step_progress_indicator: ^1.0.2
+  intl: ^0.19.0
+
+  # Date & Time
+  datetime_picker_formfield_new: ^2.0.0
+  table_calendar: ^3.0.9
+
+  # Image & File Handling
+  image_picker: ^1.0.4
+  file_picker: ^11.0.2
+
+  # Camera
+  camera: ^0.10.5
+
+  # Voice Input
+  speech_to_text: ^7.2.0
+
+  # Notifications
+  flutter_local_notifications: ^21.0.0
+
+  # Maps (Optional)
+  google_maps_flutter: ^2.5.0
+
+  # Location & Geocoding
+  geolocator: any
+  geocoding: any
+
+  # Bottom Navigation & Routing
+  go_router: ^11.1.0
+  flow_builder: ^0.1.0
+
+  # UI Utilities
+  fluttertoast: ^8.2.1
+  loading_animation_widget: ^1.2.0
+  pull_to_refresh: ^2.0.0
+
+  # PDF Generation (for complaint reports)
+  pdf: ^3.10.0
+  printing: ^5.11.0
+
+  # Animations
+  lottie: ^2.7.0
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
+  location: ^8.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+
+  flutter_lints: ^3.0.0
+  build_runner: ^2.4.0
+
+flutter:
+  uses-material-design: true
+
+  # assets:
+  #   - assets/images/
+  #   - assets/animations/
+  #   - assets/icons/
+
+  # fonts:
+  #   - family: Roboto
+  #     fonts:
+  #       - asset: assets/fonts/Roboto-Regular.ttf
+  #       - asset: assets/fonts/Roboto-Bold.ttf
+  #         weight: 700
+  #       - asset: assets/fonts/Roboto-Light.ttf
+  #         weight: 300
+  #   - family: Poppins
+  #     fonts:
+  #       - asset: assets/fonts/Poppins-Regular.ttf
+  #       - asset: assets/fonts/Poppins-Bold.ttf
+  #         weight: 700
+  #       - asset: assets/fonts/Poppins-SemiBold.ttf
+  #         weight: 600

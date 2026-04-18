@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Submit civic grievances and complaints easily with voice input support">
+    <title>Submit Complaint - Civic Grievance System</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script>
+        // Check if user is logged in
+        if (!localStorage.getItem('cgs_user')) {
+            window.location.href = 'app.html';
+        }
+        const currentUser = JSON.parse(localStorage.getItem('cgs_user') || '{}');
+        if (currentUser.role === 'admin') {
+            window.location.href = 'admin.html';
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="logo">🏛️ Civic Connect</h1>
+            <p class="tagline">Your Voice, Our Priority</p>
+        </header>
+
+        <!-- Navigation with Logout -->
+        <nav class="nav" style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <a href="index.html" class="nav-link active">Submit Complaint</a>
+                <a href="track.html" class="nav-link">Track Status</a>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <span id="userInfo" style="color: #94a3b8; font-size: 0.9rem;"></span>
+                <button onclick="logout()" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Main Card -->
+        <div class="card">
+            <h2 class="card-title">File a Grievance</h2>
+
+            <form id="complaintForm">
+                <!-- Personal Information -->
+                <div class="form-group">
+                    <label for="name" class="form-label required">Full Name</label>
+                    <input type="text" id="name" name="name" class="form-input" placeholder="Enter your full name"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label required">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="your.email@example.com"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone" class="form-label required">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" class="form-input" placeholder="+91 98765 43210"
+                        pattern="[0-9+\s-]+" required>
+                </div>
+
+                <!-- Complaint Details -->
+                <div class="form-group">
+                    <label for="category" class="form-label required">Category</label>
+                    <select id="category" name="category" class="form-select" required>
+                        <option value="">Select a category</option>
+                        <option value="roads">🛣️ Roads & Infrastructure</option>
+                        <option value="water">💧 Water Supply</option>
+                        <option value="electricity">⚡ Electricity</option>
+                        <option value="sanitation">🧹 Sanitation & Cleanliness</option>
+                        <option value="garbage">🗑️ Garbage & Waste</option>
+                        <option value="drainage">🌊 Drainage & Sewage</option>
+                        <option value="streetlights">💡 Street Lights</option>
+                        <option value="parks">🌳 Parks & Gardens</option>
+                        <option value="noise">🔊 Noise Pollution</option>
+                        <option value="other">📋 Other</option>
+                    </select>
+                </div>
+
+                <!-- Auto-populated Department -->
+                <div class="form-group" id="departmentGroup" style="display: none;">
+                    <label for="department" class="form-label">Assigned Department</label>
+                    <input type="text" id="department" name="department" class="form-input" readonly
+                        style="opacity: 0.7; cursor: not-allowed;">
+                </div>
+
+                <div class="form-group">
+                    <label for="location" class="form-label required">Location</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="location" name="location" class="form-input"
+                            placeholder="Enter location or use GPS" style="flex: 1;" required>
+                        <button type="button" id="getLocationBtn" class="btn btn-secondary">
+                            📍 GPS
+                        </button>
+                    </div>
+                    <small class="text-muted" id="locationStatus"></small>
+                </div>
+
+                <div class="form-group">
+                    <label for="description" class="form-label required">Description</label>
+                    <div class="voice-input-wrapper">
+                        <textarea id="description" name="description" class="form-textarea"
+                            placeholder="Describe your complaint in detail..." required
+                            style="padding-right: 60px;"></textarea>
+                        <button type="button" class="voice-btn" data-target="description" title="Voice Input">
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+                                <path
+                                    d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <small class="text-muted" id="descriptionStatus"></small>
+                </div>
+
+                <!-- File Upload -->
+                <div class="form-group">
+                    <label class="form-label">Upload Evidence (Optional)</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" id="evidence" name="evidence" class="file-upload-input" accept="image/*">
+                        <label for="evidence" class="file-upload-label">
+                            <span>📷 Choose Image</span>
+                        </label>
+                    </div>
+                    <div id="filePreview" class="file-preview hidden"></div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="btn btn-primary btn-block">
+                    Submit Complaint
+                </button>
+            </form>
+        </div>
+
+        <!-- Tips -->
+        <div class="card mt-md">
+            <h3 style="font-size: 1.125rem; margin-bottom: 1rem; color: var(--text-secondary);">
+                💡 Quick Tips
+            </h3>
+            <ul style="color: var(--text-secondary); font-size: 0.875rem; line-height: 1.8; padding-left: 1.5rem;">
+                <li>Provide accurate location details for faster resolution</li>
+                <li>Upload clear photos as evidence when possible</li>
+                <li>Use voice input 🎤 for quick complaint submission</li>
+                <li>Save your complaint ID to track status</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script>
+        // Display user info
+        document.getElementById('userInfo').textContent = `👤 ${currentUser.name || 'User'}`;
+        
+        function logout() {
+            localStorage.removeItem('cgs_user');
+            window.location.href = 'app.html';
+        }
+    </script>
+    <script src="assets/js/voice_input.js"></script>
+    <script src="assets/js/script.js"></script>
+</body>
+
+</html>

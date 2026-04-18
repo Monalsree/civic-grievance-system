@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Civic Grievance System - Login">
+    <title>Login - Civic Grievance System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Login Card -->
+        <div class="card" style="max-width: 400px; margin: auto; margin-top: 50px;">
+            <h1 style="text-align: center; margin-bottom: 0.5rem;">🏛️ Civic Grievance System</h1>
+            <p style="text-align: center; color: #64748b; margin-bottom: 2rem;">File & track civic complaints</p>
+
+            <!-- Role Toggle -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 2rem;">
+                <button class="btn btn-primary role-btn active" data-role="citizen" onclick="switchRole('citizen')" style="flex: 1;">👤 Citizen</button>
+                <button class="btn btn-secondary role-btn" data-role="admin" onclick="switchRole('admin')" style="flex: 1;">🔧 Admin</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label class="form-label">Username / Email</label>
+                    <input type="text" id="loginUsername" class="form-input" placeholder="Enter username or email" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="loginPassword" class="form-input" placeholder="Enter password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">🔐 Login</button>
+            </form>
+
+            <!-- Register Link -->
+            <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem; color: #64748b;">
+                New user? <a href="#" onclick="toggleRegisterForm(); return false;" style="color: #7c3aed; text-decoration: none; font-weight: 600;">Register here</a>
+            </p>
+
+            <!-- Register Form (Hidden by default) -->
+            <form id="registerForm" style="display: none;" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="regName" class="form-input" placeholder="Your full name" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" id="regEmail" class="form-input" placeholder="your@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="tel" id="regPhone" class="form-input" placeholder="Mobile number" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="regUsername" class="form-input" placeholder="Choose a username" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="regPassword" class="form-input" placeholder="Min 4 characters" required minlength="4">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">📝 Register</button>
+                <p style="text-align: center; margin-top: 1rem;">
+                    <a href="#" onclick="toggleRegisterForm(); return false;" style="color: #64748b; font-size: 0.85rem; text-decoration: none;">← Back to Login</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:5000/api';
+
+        function switchRole(role) {
+            document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-role="${role}"]`).classList.add('active');
+        }
+
+        function toggleRegisterForm() {
+            document.getElementById('loginForm').style.display = 
+                document.getElementById('loginForm').style.display === 'none' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = 
+                document.getElementById('registerForm').style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            try {
+                const response = await fetch(`${API}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    alert(data.error || 'Login failed');
+                    return;
+                }
+
+                localStorage.setItem('cgs_user', JSON.stringify(data.user));
+                alert(`Welcome, ${data.user.name}!`);
+                
+                // Redirect based on role
+                if (data.user.role === 'admin') {
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            } catch (error) {
+                alert('Connection error: ' + error.message);
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('regName').value.trim(),
+                email: document.getElementById('regEmail').value.trim(),
+                phone: document.getElementById('regPhone').value.trim(),
+                username: document.getElementById('regUsername').value.trim(),
+                password: document.getElementById('regPassword').value.trim()
+            };
+
+            try {
+                const response = await fetch(`${API}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    alert(data.error || 'Registration failed');
+                    return;
+                }
+
+                alert('Registration successful! Please login.');
+                toggleRegisterForm();
+                document.getElementById('registerForm').reset();
+                document.getElementById('loginUsername').value = payload.username;
+            } catch (error) {
+                alert('Registration error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>
+
+        <!-- ===== HEADER / NAVBAR ===== -->
+        <header class="app-header" id="appHeader" style="display:none;">
+            <div class="app-logo">
+                <span class="app-logo-icon">🏛️</span>
+                <span>Civic Grievance</span>
+            </div>
+            <nav class="app-nav" id="appNav"></nav>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <div class="user-badge" id="userBadge"></div>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- ===== LOGIN VIEW ===== -->
+        <div class="view active" id="loginView">
+            <div class="login-container">
+                <div class="login-card">
+                    <div class="login-header">
+                        <div style="font-size:2.5rem;margin-bottom:0.5rem;">🏛️</div>
+                        <h1>Civic Grievance System</h1>
+                        <p>File & track civic complaints</p>
+                    </div>
+
+                    <div class="role-toggle" id="roleToggle">
+                        <button class="role-toggle-btn active" data-role="citizen" onclick="switchLoginRole('citizen')">👤 Citizen</button>
+                        <button class="role-toggle-btn" data-role="admin" onclick="switchLoginRole('admin')">🔧 Admin</button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="loginForm" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label class="form-label">Username / Email</label>
+                            <input type="text" class="form-input" id="loginUsername" placeholder="Enter username or email" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-input" id="loginPassword" placeholder="Enter password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">🔐 Login</button>
+                    </form>
+
+                    <!-- Register Link -->
+                    <div id="authToggle" style="text-align:center;margin-top:1rem;color:var(--text-secondary);font-size:0.85rem;">
+                        New user? <a href="#" onclick="toggleRegisterForm(); return false;" style="color:var(--accent-primary);text-decoration:none;font-weight:600;">Register here</a>
+                    </div>
+
+                    <!-- Register Form (Initially Hidden) -->
+                    <form id="registerForm" style="display:none;" onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-input" id="regName" placeholder="Your full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="regEmail" placeholder="your@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-input" id="regPhone" placeholder="Mobile number" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-input" id="regUsername" placeholder="Choose a username" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-input" id="regPassword" placeholder="Min 4 characters" required minlength="4">
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">📝 Register</button>
+                        <p style="text-align:center;margin-top:0.75rem;">
+                            <a href="#" onclick="toggleRegisterForm(); return false;" style="color:var(--text-secondary);font-size:0.8rem;text-decoration:none;">← Back to Login</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ADMIN VIEW ===== -->
+        <div class="view" id="adminView">
+            <div class="section-header">
+                <div>
+                    <h2>🖥️ Admin Dashboard</h2>
+                </div>
+            </div>
+
+            <!-- Admin Navigation -->
+            <div id="adminNav">
+                <button class="admin-nav-btn active" data-section="dashboard" onclick="switchAdminSection('dashboard')">Dashboard</button>
+                <button class="admin-nav-btn inactive" data-section="insights" onclick="switchAdminSection('insights')">📊 Insights</button>
+                <button class="admin-nav-btn inactive" data-section="predictions" onclick="switchAdminSection('predictions')">🔮 Predictions</button>
+                <button class="admin-nav-btn inactive" data-section="map" onclick="switchAdminSection('map')">🗺️ Map</button>
+            </div>
+
+            <!-- DASHBOARD Section -->
+            <div id="dashboardSection" class="admin-section">
+                <div class="stats-grid" id="adminStats"></div>
+                <div class="card">
+                    <h3>📋 Complaints</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Department</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Upvotes</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTableBody">
+                                <tr>
+                                    <td colspan="8" style="text-align:center;padding:2rem;">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSIGHTS Section -->
+            <div id="insightsSection" class="admin-section" style="display:none;">
+                <h3>📊 Pattern Detection & Insights</h3>
+                <div id="insightsContainer" class="insights-container"></div>
+                <h3 style="margin-top:2rem;">🔥 Problem Hotspots</h3>
+                <div class="hotspots-grid" id="hotspotsGrid"></div>
+                <h3 style="margin-top:2rem;">⭐ Trending Complaints</h3>
+                <div class="trending-container" id="trendingContainer"></div>
+            </div>
+
+            <!-- PREDICTIONS Section -->
+            <div id="predictionsSection" class="admin-section" style="display:none;">
+                <h3>🔮 Future Issue Predictions</h3>
+                <div id="predictionsContainer" class="predictions-container"></div>
+                <h3 style="margin-top:2rem;">⚠️ Seasonal Alerts</h3>
+                <div id="seasonalAlertsContainer"></div>
+            </div>
+
+            <!-- MAP Section -->
+            <div id="mapSection" class="admin-section" style="display:none;">
+                <h3>🗺️ Complaint Map View</h3>
+                <div class="map-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #10b981;"></div>
+                        <span>Low Priority</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f59e0b;"></div>
+                        <span>Medium Priority</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ef4444;"></div>
+                        <span>High Priority</span>
+                    </div>
+                </div>
+                <div id="mapContainer"></div>
+            </div>
+        </div>
+
+        <!-- ===== CITIZEN: SUBMIT COMPLAINT ===== -->
+        <div class="view" id="submitView">
+            <div class="section-header">
+                <div>
+                    <h2>📝 Submit Complaint</h2>
+                    <span class="section-subtitle">File a new civic grievance</span>
+                </div>
+            </div>
+            <div class="card" style="max-width:700px;">
+                <form id="complaintForm" onsubmit="handleSubmitComplaint(event)">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="cName" placeholder="Your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="cEmail" placeholder="your@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-input" id="cPhone" placeholder="Mobile number" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" id="cCategory" required onchange="suggestDepartmentCitizen()">
+                            <option value="">Select category...</option>
+                            <option value="roads">🛣️ Roads & Infrastructure</option>
+                            <option value="water">💧 Water Supply</option>
+                            <option value="electricity">⚡ Electricity</option>
+                            <option value="sanitation">🧹 Sanitation</option>
+                            <option value="garbage">🗑️ Garbage & Waste</option>
+                            <option value="drainage">🌊 Drainage & Sewage</option>
+                            <option value="streetlights">💡 Street Lights</option>
+                            <option value="parks">🌳 Parks & Gardens</option>
+                            <option value="noise">🔊 Noise Pollution</option>
+                            <option value="other">📋 Other</option>
+                        </select>
+                    </div>
+                    <div id="deptInfo" style="display:none;" class="form-group" style="background:rgba(124,58,237,0.1);padding:1rem;border-radius:6px;">
+                        ℹ️ <strong>Auto-Assigned Department:</strong> <span id="suggestedDept">-</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" id="cLocation" placeholder="Enter location" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="cDescription" placeholder="Describe your complaint..." rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">🚀 Submit Complaint</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== CITIZEN: TRACK COMPLAINT ===== -->
+        <div class="view" id="trackView">
+            <div class="section-header">
+                <div>
+                    <h2>🔍 Track Complaint</h2>
+                    <span class="section-subtitle">Search and view your complaints</span>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom:1.5rem;">
+                <div style="display:flex;gap:0.5rem;">
+                    <input type="text" class="form-input" id="trackSearch" placeholder="Enter Complaint ID or Phone Number" style="flex:1;">
+                    <button class="btn btn-primary" onclick="searchComplaint()">Search</button>
+                </div>
+            </div>
+
+            <div id="myComplaintsList">
+                <div class="section-header">
+                    <h2>📋 My Complaints</h2>
+                </div>
+                <div id="myComplaintsContent">
+                    <div class="card">
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <p>Your complaints will appear here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="trackResult" style="display:none;margin-top:1.5rem;"></div>
+        </div>
+
+        <!-- ===== SUCCESS MODAL ===== -->
+        <div class="modal-overlay" id="successModal">
+            <div class="modal-content">
+                <div class="modal-icon">✅</div>
+                <div class="modal-title">Complaint Submitted!</div>
+                <div class="modal-text">Your complaint has been registered and assigned to the relevant department.</div>
+                <div class="modal-id" id="modalComplaintId"></div>
+                <div style="margin-top:0.5rem;">
+                    <span id="modalPriority"></span>
+                    <span id="modalDepartment" style="color:var(--text-secondary);font-size:0.85rem;display:block;margin-top:0.5rem;"></span>
+                </div>
+                <button class="btn btn-primary btn-block" style="margin-top:1.25rem;" onclick="closeModal()">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+
+</html>
+        <div class="header-content">
+            <div class="logo">📋 Civic Grievance System</div>
+            <div class="nav-tabs">
+                <button class="nav-btn active" onclick="navigateTo('dashboard')">Dashboard</button>
+                <button class="nav-btn" onclick="navigateTo('insights')">📊 Insights</button>
+                <button class="nav-btn" onclick="navigateTo('predictions')">🔮 Predictions</button>
+                <button class="nav-btn" onclick="navigateTo('map')">🗺️ Map</button>
+                <button class="nav-btn" onclick="navigateTo('submit')">➕ Submit</button>
+                <button class="nav-btn" onclick="navigateTo('mycomplaints')">📁 My</button>
+                <span class="user-info">
+                    <span id="userDisplay"></span>
+                    <span class="user-badge" id="roleDisplay">Admin</span>
+                    <button onclick="logout()" style="background: #ef4444; border: none; color: white; padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer;">Logout</button>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+
+        <!-- LOGIN VIEW -->
+        <div id="loginView">
+            <div class="login-container">
+                <div class="login-title">
+                    <h1>📋 Civic Grievance System</h1>
+                    <p>File and track complaints easily</p>
+                </div>
+                <div class="role-toggle">
+                    <button class="active" onclick="switchRole('citizen')">👤 Citizen</button>
+                    <button onclick="switchRole('admin')">👨‍💼 Admin</button>
+                </div>
+                <form id="loginForm" onsubmit="handleLogin(event)">
+                    <div class="login-form-group">
+                        <label>Username / Email</label>
+                        <input type="text" id="loginUsername" placeholder="Enter your username or email" required>
+                    </div>
+                    <div class="login-form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="login-btn">🔐 Login</button>
+                </form>
+                <div class="register-link">
+                    Don't have an account? <a onclick="showRegisterForm()" style="color: #7c3aed; cursor: pointer; text-decoration: underline;">Register here</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- APP VIEW -->
+        <div id="appView">
+            <!-- DASHBOARD -->
+            <div id="dashboard" class="view active">
+                <h2 style="margin-bottom: 1.5rem;">Dashboard</h2>
+                <div class="stats-grid">
+                    <div class="stat-card"><h3>📊 Total</h3><div class="stat-number" id="statTotal">0</div></div>
+                    <div class="stat-card"><h3>⏳ Pending</h3><div class="stat-number" id="statPending">0</div></div>
+                    <div class="stat-card"><h3>✅ Resolved</h3><div class="stat-number" id="statResolved">0</div></div>
+                    <div class="stat-card"><h3>🔴 High</h3><div class="stat-number" id="statHighPriority">0</div></div>
+                </div>
+                <h3 style="margin: 2rem 0 1rem 0;">📋 Recent Complaints</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th><th>Category</th><th>Location</th><th>Priority</th><th>Department</th><th>Status</th><th>Upvotes</th><th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody"><tr><td colspan="8" style="text-align: center;">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- INSIGHTS -->
+            <div id="insights" class="view">
+                <h2 style="margin-bottom: 1.5rem;">📊 Pattern Detection & Insights</h2>
+                <div id="insightsContainer" class="insights-container"></div>
+                <h3 style="margin: 2rem 0 1rem 0;">🔥 Problem Hotspots</h3>
+                <div class="hotspots-grid" id="hotspotsGrid"></div>
+                <h3 style="margin: 2rem 0 1rem 0;">⭐ Trending Complaints</h3>
+                <div class="trending-container" id="trendingContainer"></div>
+            </div>
+
+            <!-- PREDICTIONS -->
+            <div id="predictions" class="view">
+                <h2 style="margin-bottom: 1.5rem;">🔮 Future Issue Predictions</h2>
+                <div id="predictionsContainer" class="predictions-container"></div>
+                <h3 style="margin: 2rem 0 1rem 0;">⚠️ Seasonal Alerts</h3>
+                <div id="seasonalAlertsContainer"></div>
+            </div>
+
+            <!-- MAP -->
+            <div id="map" class="view">
+                <h2 style="margin-bottom: 1.5rem;">🗺️ Complaint Map View</h2>
+                <div id="mapContainer"></div>
+            </div>
+
+            <!-- SUBMIT -->
+            <div id="submit" class="view">
+                <h2 style="margin-bottom: 1.5rem;">➕ Submit a New Complaint</h2>
+                <div class="login-container" style="max-width: 800px;">
+                    <form id="submitForm" onsubmit="handleSubmit(event)">
+                        <div class="login-form-group">
+                            <label>Your Name *</label>
+                            <input type="text" id="submitName" required>
+                        </div>
+                        <div class="login-form-group">
+                            <label>Email *</label>
+                            <input type="email" id="submitEmail" required>
+                        </div>
+                        <div class="login-form-group">
+                            <label>Phone *</label>
+                            <input type="tel" id="submitPhone" required>
+                        </div>
+                        <div class="login-form-group">
+                            <label>Category *</label>
+                            <select id="submitCategory" required onchange="suggestDepartment()">
+                                <option value="">-- Select Category --</option>
+                                <option value="water">💧 Water Supply</option>
+                                <option value="electricity">⚡ Electricity</option>
+                                <option value="roads">🛣️ Roads</option>
+                                <option value="garbage">🗑️ Garbage</option>
+                                <option value="drainage">🌊 Drainage</option>
+                                <option value="streetlight">💡 Street Light</option>
+                                <option value="other">📝 Other</option>
+                            </select>
+                        </div>
+                        <div class="login-form-group">
+                            <label>Location *</label>
+                            <input type="text" id="submitLocation" required>
+                        </div>
+                        <div class="login-form-group">
+                            <label>Description *</label>
+                            <textarea id="submitDescription" style="min-height: 120px;" required></textarea>
+                        </div>
+                        <div class="auto-dept-info" id="autoDeptInfo" style="display: none;">
+                            ℹ️ <strong>Auto-Assigned:</strong> <span id="autoDeptName">-</span>
+                        </div>
+                        <button type="submit" class="login-btn" style="background: linear-gradient(135deg, #10b981, #059669);">📤 Submit</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- MY COMPLAINTS -->
+            <div id="mycomplaints" class="view">
+                <h2 style="margin-bottom: 1.5rem;">📁 My Complaints</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th><th>Category</th><th>Location</th><th>Status</th><th>Created</th><th>Upvotes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="myComplaintsTable"><tr><td colspan="6">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- NOTIFICATIONS PANEL -->
+        <div id="notificationsPanel" class="notifications-panel"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="assets/js/app-enhanced.js"></script>
+</body>
+</html>

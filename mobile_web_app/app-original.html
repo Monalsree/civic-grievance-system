@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Civic Grievance System - Submit, Track, and Manage Complaints">
+    <title>Civic Grievance System</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="assets/css/app.css">
+    <style>
+        /* Additional styles for new features */
+        .insight-card { background: rgba(30, 41, 59, 0.6); border: 1px solid #475569; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 1.2rem; margin-bottom: 1rem; }
+        .insight-card.high { border-left-color: #ef4444; }
+        .hotspots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .hotspot-badge { background: rgba(30, 41, 59, 0.6); border: 1px solid #475569; border-radius: 8px; padding: 1rem; text-align: center; }
+        .trending-card { background: rgba(30, 41, 59, 0.6); border: 1px solid #475569; border-radius: 8px; padding: 1rem; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
+        .trending-upvotes { background: var(--accent-primary); color: white; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; }
+        .prediction-card { background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(124, 58, 237, 0.1)); border: 1px solid var(--accent-primary); border-radius: 8px; padding: 1.2rem; margin-bottom: 1rem; }
+        #mapContainer { height: 500px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 2rem; overflow: hidden; }
+        .leaflet-container { background: var(--bg-secondary) !important; }
+        .map-legend { background: rgba(30, 41, 59, 0.9); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; display: flex; gap: 2rem; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+        .legend-color { width: 20px; height: 20px; border-radius: 50%; }
+        #adminNav { display: flex; gap: 1rem; margin-bottom: 1.5rem; }
+        #adminNav button { padding: 0.5rem 1rem; border: none; background: var(--accent-primary); color: white; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        #adminNav button.inactive { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+
+        <!-- ===== HEADER / NAVBAR ===== -->
+        <header class="app-header" id="appHeader" style="display:none;">
+            <div class="app-logo">
+                <span class="app-logo-icon">🏛️</span>
+                <span>Civic Grievance</span>
+            </div>
+            <nav class="app-nav" id="appNav"></nav>
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+                <div class="user-badge" id="userBadge"></div>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <!-- ===== LOGIN VIEW ===== -->
+        <div class="view active" id="loginView">
+            <div class="login-container">
+                <div class="login-card">
+                    <div class="login-header">
+                        <div style="font-size:2.5rem;margin-bottom:0.5rem;">🏛️</div>
+                        <h1>Civic Grievance System</h1>
+                        <p>File & track civic complaints</p>
+                    </div>
+
+                    <div class="role-toggle" id="roleToggle">
+                        <button class="role-toggle-btn active" data-role="citizen" onclick="switchLoginRole('citizen')">👤 Citizen</button>
+                        <button class="role-toggle-btn" data-role="admin" onclick="switchLoginRole('admin')">🔧 Admin</button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="loginForm" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label class="form-label">Username / Email</label>
+                            <input type="text" class="form-input" id="loginUsername" placeholder="Enter username or email" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-input" id="loginPassword" placeholder="Enter password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">🔐 Login</button>
+                    </form>
+
+                    <!-- Register Link -->
+                    <div id="authToggle" style="text-align:center;margin-top:1rem;color:var(--text-secondary);font-size:0.85rem;">
+                        New user? <a href="#" onclick="toggleRegisterForm(); return false;" style="color:var(--accent-primary);text-decoration:none;font-weight:600;">Register here</a>
+                    </div>
+
+                    <!-- Register Form (Initially Hidden) -->
+                    <form id="registerForm" style="display:none;" onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" class="form-input" id="regName" placeholder="Your full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="regEmail" placeholder="your@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-input" id="regPhone" placeholder="Mobile number" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-input" id="regUsername" placeholder="Choose a username" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-input" id="regPassword" placeholder="Min 4 characters" required minlength="4">
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">📝 Register</button>
+                        <p style="text-align:center;margin-top:0.75rem;">
+                            <a href="#" onclick="toggleRegisterForm(); return false;" style="color:var(--text-secondary);font-size:0.8rem;text-decoration:none;">← Back to Login</a>
+                        </p>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== ADMIN VIEW ===== -->
+        <div class="view" id="adminView">
+            <div class="section-header">
+                <div>
+                    <h2>🖥️ Admin Dashboard</h2>
+                </div>
+            </div>
+
+            <!-- Admin Navigation -->
+            <div id="adminNav">
+                <button class="admin-nav-btn active" data-section="dashboard" onclick="switchAdminSection('dashboard')">Dashboard</button>
+                <button class="admin-nav-btn inactive" data-section="insights" onclick="switchAdminSection('insights')">📊 Insights</button>
+                <button class="admin-nav-btn inactive" data-section="predictions" onclick="switchAdminSection('predictions')">🔮 Predictions</button>
+                <button class="admin-nav-btn inactive" data-section="map" onclick="switchAdminSection('map')">🗺️ Map</button>
+            </div>
+
+            <!-- DASHBOARD Section -->
+            <div id="dashboardSection" class="admin-section">
+                <div class="stats-grid" id="adminStats"></div>
+                <div class="card">
+                    <h3>📋 Complaints</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Department</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Upvotes</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTableBody">
+                                <tr>
+                                    <td colspan="8" style="text-align:center;padding:2rem;">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSIGHTS Section -->
+            <div id="insightsSection" class="admin-section" style="display:none;">
+                <h3>📊 Pattern Detection & Insights</h3>
+                <div id="insightsContainer" class="insights-container"></div>
+                <h3 style="margin-top:2rem;">🔥 Problem Hotspots</h3>
+                <div class="hotspots-grid" id="hotspotsGrid"></div>
+                <h3 style="margin-top:2rem;">⭐ Trending Complaints</h3>
+                <div class="trending-container" id="trendingContainer"></div>
+            </div>
+
+            <!-- PREDICTIONS Section -->
+            <div id="predictionsSection" class="admin-section" style="display:none;">
+                <h3>🔮 Future Issue Predictions</h3>
+                <div id="predictionsContainer" class="predictions-container"></div>
+                <h3 style="margin-top:2rem;">⚠️ Seasonal Alerts</h3>
+                <div id="seasonalAlertsContainer"></div>
+            </div>
+
+            <!-- MAP Section -->
+            <div id="mapSection" class="admin-section" style="display:none;">
+                <h3>🗺️ Complaint Map View</h3>
+                <div class="map-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #10b981;"></div>
+                        <span>Low Priority</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f59e0b;"></div>
+                        <span>Medium Priority</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #ef4444;"></div>
+                        <span>High Priority</span>
+                    </div>
+                </div>
+                <div id="mapContainer"></div>
+            </div>
+        </div>
+
+        <!-- ===== CITIZEN: SUBMIT COMPLAINT ===== -->
+        <div class="view" id="submitView">
+            <div class="section-header">
+                <div>
+                    <h2>📝 Submit Complaint</h2>
+                    <span class="section-subtitle">File a new civic grievance</span>
+                </div>
+            </div>
+            <div class="card" style="max-width:700px;">
+                <form id="complaintForm" onsubmit="handleSubmitComplaint(event)">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="cName" placeholder="Your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="cEmail" placeholder="your@email.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-input" id="cPhone" placeholder="Mobile number" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-select" id="cCategory" required onchange="suggestDepartmentCitizen()">
+                            <option value="">Select category...</option>
+                            <option value="roads">🛣️ Roads & Infrastructure</option>
+                            <option value="water">💧 Water Supply</option>
+                            <option value="electricity">⚡ Electricity</option>
+                            <option value="sanitation">🧹 Sanitation</option>
+                            <option value="garbage">🗑️ Garbage & Waste</option>
+                            <option value="drainage">🌊 Drainage & Sewage</option>
+                            <option value="streetlights">💡 Street Lights</option>
+                            <option value="parks">🌳 Parks & Gardens</option>
+                            <option value="noise">🔊 Noise Pollution</option>
+                            <option value="other">📋 Other</option>
+                        </select>
+                    </div>
+                    <div id="deptInfo" style="display:none;" class="form-group" style="background:rgba(124,58,237,0.1);padding:1rem;border-radius:6px;">
+                        ℹ️ <strong>Auto-Assigned Department:</strong> <span id="suggestedDept">-</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" id="cLocation" placeholder="Enter location" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-textarea" id="cDescription" placeholder="Describe your complaint..." rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">🚀 Submit Complaint</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ===== CITIZEN: TRACK COMPLAINT ===== -->
+        <div class="view" id="trackView">
+            <div class="section-header">
+                <div>
+                    <h2>🔍 Track Complaint</h2>
+                    <span class="section-subtitle">Search and view your complaints</span>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom:1.5rem;">
+                <div style="display:flex;gap:0.5rem;">
+                    <input type="text" class="form-input" id="trackSearch" placeholder="Enter Complaint ID or Phone Number" style="flex:1;">
+                    <button class="btn btn-primary" onclick="searchComplaint()">Search</button>
+                </div>
+            </div>
+
+            <div id="myComplaintsList">
+                <div class="section-header">
+                    <h2>📋 My Complaints</h2>
+                </div>
+                <div id="myComplaintsContent">
+                    <div class="card">
+                        <div class="empty-state">
+                            <div class="empty-icon">📭</div>
+                            <p>Your complaints will appear here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="trackResult" style="display:none;margin-top:1.5rem;"></div>
+        </div>
+
+        <!-- ===== SUCCESS MODAL ===== -->
+        <div class="modal-overlay" id="successModal">
+            <div class="modal-content">
+                <div class="modal-icon">✅</div>
+                <div class="modal-title">Complaint Submitted!</div>
+                <div class="modal-text">Your complaint has been registered and assigned to the relevant department.</div>
+                <div class="modal-id" id="modalComplaintId"></div>
+                <div style="margin-top:0.5rem;">
+                    <span id="modalPriority"></span>
+                    <span id="modalDepartment" style="color:var(--text-secondary);font-size:0.85rem;display:block;margin-top:0.5rem;"></span>
+                </div>
+                <button class="btn btn-primary btn-block" style="margin-top:1.25rem;" onclick="closeModal()">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+
+</html>
