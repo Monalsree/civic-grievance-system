@@ -65,37 +65,15 @@ civic-grievance-system/
 ├── FLUTTER_APP_GUIDE.md
 └── FEATURES_GUIDE.md
 
+```
 🛠️ Technologies Used
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-LayerTechnologyBackendPython 3.8+, Flask, Flask-CORS, SQLiteAI/MLGoogle Gemini API, scikit-learn (TF-IDF + Naive Bayes), Fuzzy LogicWeb FrontendHTML5, CSS3 (Glassmorphism + Dark Theme), JavaScript, Chart.jsMobileFlutter (Dart), speech_to_text, image_picker, geolocator, sqfliteOthersWeb Speech API, Nominatim (OpenStreetMap)
+Layer,Technology
+Backend,"Python 3.8+, Flask, Flask-CORS, SQLite"
+AI/ML,"Google Gemini API, scikit-learn (TF-IDF + Naive Bayes), Fuzzy Logic"
+Web Frontend,"HTML5, CSS3 (Glassmorphism + Dark Theme), JavaScript, Chart.js"
+Mobile,"Flutter (Dart), speech_to_text, image_picker, geolocator, sqflite"
+Others,"Web Speech API, Nominatim (OpenStreetMap)"
 
 🚀 Local Setup & Run Guide
 Prerequisites
